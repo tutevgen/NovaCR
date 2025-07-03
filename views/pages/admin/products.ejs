@@ -1,0 +1,194 @@
+<% layout('layout') %>
+<% title = 'Товары' %>
+
+<div class="max-w-7xl mx-auto p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Товары</h1>
+    <div class="flex gap-3">
+      <button type="button" id="openCategoryBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        <i data-lucide="list-tree"></i>
+      </button>
+      <button id="openProductBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <i data-lucide="square-plus"></i>
+      </button>
+    </div>
+  </div>
+
+  <form id="filterForm" class="mb-6 bg-white p-4 rounded shadow-sm space-y-4">
+    <div>
+      <input type="text" name="search" placeholder="Поиск по названию..."
+             class="w-full border border-gray-300 rounded px-4 py-2 text-sm"
+             value="<%= typeof search !== 'undefined' ? search : '' %>" />
+    </div>
+
+    <div class="border border-gray-200 rounded-md p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div>
+        <label for="categoryFilter" class="block text-xs font-medium text-gray-600 mb-1">Категория</label>
+        <select id="categoryFilter" name="category" class="w-full border-gray-300 rounded px-3 py-2 text-sm bg-gray-100">
+          <option value="">Все категории</option>
+          <% if (groupedCategories?.length) { %>
+            <% groupedCategories.forEach(group => { %>
+              <optgroup label="<%= group.label %>">
+                <% group.options.forEach(option => { %>
+                  <option value="<%= option._id %>" <%= option._id.toString() === String(category) ? 'selected' : '' %>><%= option.name %></option>
+                <% }) %>
+              </optgroup>
+            <% }) %>
+          <% } else { %>
+            <% categories.forEach(cat => { if (!cat.parent) { %>
+              <option value="<%= cat._id %>" <%= cat._id.toString() === String(category) ? 'selected' : '' %>><%= cat.name %></option>
+            <% }}); %>
+          <% } %>
+        </select>
+      </div>
+
+      <div>
+        <label for="isVisible" class="block text-xs font-medium text-gray-600 mb-1">Клиентам</label>
+        <select id="isVisible" name="isVisible" class="w-full border-gray-300 rounded px-3 py-2 text-sm bg-gray-100">
+          <option value="">Все</option>
+          <option value="true" <%= isVisible === 'true' ? 'selected' : '' %>>Да</option>
+          <option value="false" <%= isVisible === 'false' ? 'selected' : '' %>>Нет</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="sortFilter" class="block text-xs font-medium text-gray-600 mb-1">Сортировка</label>
+        <select id="sortFilter" name="sort" class="w-full border-gray-300 rounded px-3 py-2 text-sm bg-gray-100">
+          <option value="">По умолчанию</option>
+          <option value="name_asc" <%= sort === 'name_asc' ? 'selected' : '' %>>Название ↑</option>
+          <option value="name_desc" <%= sort === 'name_desc' ? 'selected' : '' %>>Название ↓</option>
+          <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Цена ↑</option>
+          <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Цена ↓</option>
+          <option value="newest" <%= sort === 'newest' ? 'selected' : '' %>>Сначала новые</option>
+          <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Сначала старые</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-2">Характеристики</label>
+      <div class="flex flex-wrap gap-2">
+        <% if (allCharKeys?.length) { %>
+          <% allCharKeys.forEach(key => { %>
+            <label class="cursor-pointer">
+              <input type="checkbox" name="charFilter" value="<%= key %>" class="hidden peer">
+              <div class="px-3 py-1 text-sm border border-gray-300 rounded-full peer-checked:bg-blue-600 peer-checked:text-white hover:bg-gray-100 transition">
+                <%= key %>
+              </div>
+            </label>
+          <% }) %>
+        <% } else { %>
+          <p class="text-sm text-gray-400">Нет доступных характеристик</p>
+        <% } %>
+      </div>
+      <div id="charFiltersDetails" class="mt-4 space-y-2"></div>
+    </div>
+  </form>
+
+  <div class="overflow-x-auto mb-10 scroll-smooth max-w-full">
+    <table class="min-w-full divide-y divide-gray-200 text-sm bg-white">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left">Фото</th>
+          <th class="px-4 py-2 text-left">Название</th>
+          <th class="px-4 py-2 text-left">Категория</th>
+          <th class="px-4 py-2 text-left">Цена</th>
+          <th class="px-4 py-2 text-left">Оптом</th>
+          <th class="px-4 py-2 text-left">Склад</th>
+          <th class="px-4 py-2 text-left">Видимость</th>
+          <th class="px-4 py-2 text-left">Действия</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% products.forEach(product => { %>
+          <tr class="hover:bg-gray-50 transition" data-id="<%= product._id %>" data-product='<%- JSON.stringify(product) %>'>
+            <td class="p-3">
+              <% if (product.photo) { %>
+                <img src="<%= product.photo %>" alt="Фото"
+                     class="w-14 h-14 object-cover rounded border border-gray-300 shadow-sm" />
+              <% } else { %>
+                <div class="w-14 h-14 bg-gray-100 rounded flex items-center justify-center text-gray-400">—</div>
+              <% } %>
+            </td>
+            <td class="p-3 font-medium text-gray-900 max-w-xs break-words"><%= product.name %></td>
+            <td class="p-3 text-gray-700 text-sm"><%= product.category?.name || '—' %></td>
+            <td class="p-3 text-sm text-green-700 font-semibold whitespace-nowrap"><%= product.price %> ₽</td>
+            <td class="p-3 text-sm text-blue-700 whitespace-nowrap"><%= product.wholesalePrice || '—' %> ₽</td>
+            <td class="p-3 text-sm text-gray-600"><%= product.warehouse || '—' %></td>
+            <td class="p-3 text-center">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" class="toggle-visibility sr-only peer" data-id="<%= product._id %>" <%= product.isVisible ? 'checked' : '' %>>
+                <div class="relative w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </td>
+            <td class="p-7 flex gap-2 items-center">
+              <button class="text-blue-600 hover:text-blue-800 edit-product-btn" title="Редактировать">
+                <i data-lucide="pencil" class="w-5 h-5"></i>
+              </button>
+              <button class="text-red-600 hover:text-red-800 delete-product-btn" title="Удалить">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <% if (totalPages > 1) { %>
+      <div class="mt-8 flex justify-center flex-wrap gap-2 text-sm">
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <a href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= category ? '&category=' + category : '' %><%= isVisible ? '&isVisible=' + isVisible : '' %><%= sort ? '&sort=' + sort : '' %>"
+             class="px-3 py-1 rounded border <%= i === page ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100 border-gray-300' %>">
+            <%= i %>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="mt-6 text-center">
+      <% if (page < totalPages) { %>
+        <button id="loadMoreBtn" data-current-page="<%= page %>" data-total-pages="<%= totalPages %>"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">
+          Загрузить ещё
+        </button>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-4">
+    <h2 class="text-lg font-semibold mb-4">Журнал действий</h2>
+    <% if (logs?.length) { %>
+      <table class="min-w-full text-sm border-t">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left">Дата</th>
+            <th class="px-3 py-2 text-left">Пользователь</th>
+            <th class="px-3 py-2 text-left">Действие</th>
+            <th class="px-3 py-2 text-left">Товар</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% logs.forEach(log => { %>
+            <tr>
+              <td class="px-3 py-1"><%= new Date(log.timestamp).toLocaleString() %></td>
+              <td class="px-3 py-1"><%= log.user?.name || '-' %></td>
+              <td class="px-3 py-1"><%= log.action %></td>
+              <td class="px-3 py-1"><%= log.product?.name || '-' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p class="text-sm text-gray-500">Пока нет данных.</p>
+    <% } %>
+  </div>
+
+  <%- include('../../partials/modals/product-form', { categories, product: null }) %>
+  <%- include('../../partials/modals/category-form', { categories }) %>
+</div>
+
+<script src="/js/lucide.js"></script>
+<script src="/js/admin/products.js"></script>
+<script src="/js/admin/characteristics.js"></script>
+<script src="/js/admin/product-visibility.js"></script>
+<script src="/js/admin/products-filter.js"></script>

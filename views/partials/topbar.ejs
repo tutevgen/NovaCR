@@ -1,0 +1,47 @@
+
+<%
+  const roleMap = {
+    admin: 'Администратор',
+    manager: 'Менеджер',
+    installer: 'Монтажник',
+    client: 'Клиент'
+  };
+%>
+
+<header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+  <div></div> <!-- Пустое место слева вместо логотипа -->
+
+  <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <% if (user?.avatar) { %>
+        <img src="/img/avatars/<%= user.avatar || 'default-avatar.png' %>" class="w-10 h-10 rounded-full object-cover border" />
+      <% } else { %>
+        <div class="w-10 h-10 bg-gray-800 text-white rounded-full flex items-center justify-center text-sm font-bold uppercase">
+          <%= user?.name ? user.name[0] : 'U' %>
+        </div>
+      <% } %>
+      <div class="text-sm text-right">
+        <div class="font-semibold text-gray-800"><%= user?.name || 'Пользователь' %></div>
+        <div class="text-gray-500 text-xs">
+          <%= roleMap[user?.role] || user?.role || 'Неизвестная роль' %>
+        </div>
+      </div>
+    </div>
+
+    <% if (user?.role === 'client') { %>
+      <form action="/client/settings" method="GET">
+        <button type="submit" title="Настройки"
+          class="px-1 py-1 bg-stone-100 text-sm text-gray-700 rounded hover:text-blue-600 hover:bg-stone-300  transition">
+          <i data-lucide="cog" class="w-5 h-5"></i>
+        </button>
+      </form>
+    <% } %>
+
+    <form action="/logout" method="GET">
+      <button type="submit" title="Выход"
+        class="px-1 py-1 bg-stone-100 text-gray-700 text-sm rounded hover:text-red-600 hover:bg-stone-300 transition">
+        <i data-lucide="power" class="w-5 h-5"></i>
+      </button>
+    </form>
+  </div>
+</header>

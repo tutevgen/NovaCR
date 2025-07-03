@@ -1,0 +1,105 @@
+
+<% layout('layout') -%>
+
+<%
+  const org = user?.orgDetails || {};
+  const detailsVisible = org.companyName || org.inn || org.kpp || org.legalAddress || org.bankName || org.bik || org.rs || org.ks;
+  const showOrgForm = detailsVisible;
+%>
+
+<div class="max-w-5xl mx-auto space-y-8 p-6">
+  <h1 class="text-2xl font-bold text-center">Настройки профиля</h1>
+
+  <% if (error && error.length > 0) { %>
+    <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded mb-4"><%= error %></div>
+  <% } %>
+  <% if (success && success.length > 0) { %>
+    <div id="successAlert" class="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded mb-4"><%= success %></div>
+  <% } %>
+
+  <form action="/client/settings/profile" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-xl shadow space-y-6">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <!-- Аватар -->
+    <div class="flex items-center gap-6">
+      <div class="relative">
+        <img id="avatarPreview"
+             src="<%= user.avatar ? '/img/avatars/' + user.avatar : '/img/default-avatar.png' %>"
+             alt="Аватар"
+             class="w-20 h-20 rounded-full object-cover border border-gray-300 shadow" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Загрузить фото</label>
+        <input id="avatarInput" type="file" name="avatar" accept="image/*"
+               class="block w-full text-sm text-gray-900 border border-gray-300 rounded cursor-pointer bg-white focus:outline-none" />
+      </div>
+    </div>
+
+    <!-- Профиль -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">ФИО</label>
+        <input type="text" name="name" value="<%= user.name %>" class="w-full mt-1 border border-gray-300 rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Email</label>
+        <input type="email" name="email" value="<%= user.email || '' %>" class="w-full mt-1 border border-gray-300 rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Телефон</label>
+        <input type="text" name="phone" value="<%= user.phone || '' %>" class="w-full mt-1 border border-gray-300 rounded px-3 py-2">
+      </div>
+    </div>
+
+    <!-- Реквизиты -->
+    <div class="bg-stone-50 p-6 rounded-xl shadow mt-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold">Реквизиты</h2>
+        <button type="button" id="toggleOrgBtn"
+        class="mt-4 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 transition">
+  <span id="toggleOrgBtnText"><%= detailsVisible ? 'Свернуть' : 'Показать' %></span>
+</button>
+      </div>
+
+      <div id="orgForm" class="<%= showOrgForm ? '' : 'hidden' %> grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <label class="block text-sm font-medium">Наименование компании
+          <input type="text" name="org[companyName]" value="<%= org.companyName || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">ИНН
+          <input type="text" name="org[inn]" value="<%= org.inn || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">КПП
+          <input type="text" name="org[kpp]" value="<%= org.kpp || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">Юридический адрес
+          <input type="text" name="org[legalAddress]" value="<%= org.legalAddress || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">Банк
+          <input type="text" name="org[bankName]" value="<%= org.bankName || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">БИК
+          <input type="text" name="org[bik]" value="<%= org.bik || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">Р/С
+          <input type="text" name="org[rs]" value="<%= org.rs || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+        <label class="block text-sm font-medium">К/С
+          <input type="text" name="org[ks]" value="<%= org.ks || '' %>"
+                 class="w-full mt-1 border border-gray-300 rounded px-3 py-2" />
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" class="mt-6 bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition">Сохранить</button>
+  </form>
+
+  <script src="/js/settings.js"></script>
+  <script src="/js/init-lucide.js"></script>
+</div>
