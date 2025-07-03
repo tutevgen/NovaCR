@@ -1,0 +1,6 @@
+npm install --save-dev concurrently
+
+// В package.json добавь:
+"scripts": {
+  "dev": "concurrently \"nodemon app.js\" \"npx tailwindcss -i ./public/input.css -o ./public/style.css --watch\""
+}
